@@ -50,7 +50,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -61,7 +60,6 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -78,7 +76,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -88,22 +85,20 @@ import java.util.concurrent.TimeUnit;
  * Created by User on 5/29/2018.
  */
 
-public class Camera2Fragment extends Fragment implements
+public class Camera1Fragment extends Fragment implements
         View.OnClickListener,
         View.OnTouchListener,
-        VerticalSlideColorPicker.OnColorChangeListener {
+        VerticalSlideColorPicker.OnColorChangeListener
+{
 
     private static final String TAG = "Camera2Fragment";
     private static final int REQUEST_CAMERA_PERMISSION = 1;
     private static final String FRAGMENT_DIALOG = "dialog";
 
-    /**
-     * Time it takes for icons to fade (in milliseconds)
-     */
-    private static final int ICON_FADE_DURATION = 400;
+    /** Time it takes for icons to fade (in milliseconds) */
+    private static final int ICON_FADE_DURATION  = 400;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
-
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
         ORIENTATIONS.append(Surface.ROTATION_90, 0);
@@ -111,100 +106,63 @@ public class Camera2Fragment extends Fragment implements
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
 
-    /**
-     * The current state of camera state for taking pictures.
-     *
-     * @see #mCaptureCallback
-     */
+    /** The current state of camera state for taking pictures.
+     * @see #mCaptureCallback */
     private int mState = STATE_PREVIEW;
 
-    /**
-     * Camera state: Showing camera preview.
-     */
+    /** Camera state: Showing camera preview. */
     private static final int STATE_PREVIEW = 0;
 
-    /**
-     * Camera state: Waiting for the focus to be locked.
-     */
+    /** Camera state: Waiting for the focus to be locked. */
     private static final int STATE_WAITING_LOCK = 1;
 
-    /**
-     * Camera state: Waiting for the exposure to be precapture state.
-     */
+    /** Camera state: Waiting for the exposure to be precapture state. */
     private static final int STATE_WAITING_PRECAPTURE = 2;
 
-    /**
-     * Camera state: Waiting for the exposure state to be something other than precapture.
-     */
+    /** Camera state: Waiting for the exposure state to be something other than precapture. */
     private static final int STATE_WAITING_NON_PRECAPTURE = 3;
 
-    /**
-     * Camera state: Picture was taken.
-     */
+    /** Camera state: Picture was taken. */
     private static final int STATE_PICTURE_TAKEN = 4;
 
-    /**
-     * States for the flash
-     */
+    /** States for the flash */
     private static final int FLASH_STATE_OFF = 0;
     private static final int FLASH_STATE_ON = 1;
     private static final int FLASH_STATE_AUTO = 2;
 
 
     //vars
-    /**
-     * A {@link Semaphore} to prevent the app from exiting before closing the camera.
-     */
+    /** A {@link Semaphore} to prevent the app from exiting before closing the camera. */
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
 
-    /**
-     * A {@link CameraCaptureSession } for camera preview.
-     */
+    /** A {@link CameraCaptureSession } for camera preview. */
     private CameraCaptureSession mCaptureSession;
 
-    /**
-     * A reference to the opened {@link CameraDevice}.
-     */
+    /** A reference to the opened {@link CameraDevice}. */
     private CameraDevice mCameraDevice;
 
-    /**
-     * ID of the current {@link CameraDevice}.
-     */
+    /** ID of the current {@link CameraDevice}. */
     private String mCameraId;
 
-    /**
-     * The {@link android.util.Size} of camera preview.
-     */
+    /** The {@link Size} of camera preview. */
     private Size mPreviewSize;
 
-    /**
-     * Orientation of the camera sensor
-     */
+    /** Orientation of the camera sensor */
     private int mSensorOrientation;
 
-    /**
-     * An {@link ScalingTextureView} for camera preview.
-     */
+    /** An {@link ScalingTextureView} for camera preview. */
     private ScalingTextureView mTextureView;
 
-    /**
-     * {@link CaptureRequest.Builder} for the camera preview
-     */
+    /** {@link CaptureRequest.Builder} for the camera preview */
     private CaptureRequest.Builder mPreviewRequestBuilder;
 
-    /**
-     * {@link CaptureRequest} generated by {@link #mPreviewRequestBuilder}
-     */
+    /** {@link CaptureRequest} generated by {@link #mPreviewRequestBuilder} */
     private CaptureRequest mPreviewRequest;
 
-    /**
-     * An additional thread for running tasks that shouldn't block the UI.
-     */
+    /** An additional thread for running tasks that shouldn't block the UI. */
     private HandlerThread mBackgroundThread;
 
-    /**
-     * A {@link Handler} for running tasks in the background.
-     */
+    /** A {@link Handler} for running tasks in the background. */
     private Handler mBackgroundHandler;
 
     /**
@@ -212,14 +170,10 @@ public class Camera2Fragment extends Fragment implements
      */
     private ImageReader mImageReader;
 
-    /**
-     * Max preview width that is guaranteed by Camera2 API
-     */
+    /** Max preview width that is guaranteed by Camera2 API */
     private int MAX_PREVIEW_WIDTH = 1920;
 
-    /**
-     * Max preview height that is guaranteed by Camera2 API
-     */
+    /** Max preview height that is guaranteed by Camera2 API */
     private int MAX_PREVIEW_HEIGHT = 1080;
 
     private int SCREEN_WIDTH = 0;
@@ -248,15 +202,16 @@ public class Camera2Fragment extends Fragment implements
 
     //widgets
     private RelativeLayout mStillshotContainer, mFlashContainer, mSwitchOrientationContainer,
-            mCaptureBtnContainer, mCloseStillshotContainer, mPenContainer, mUndoContainer, mColorPickerContainer,
-            mSaveContainer, mStickerContainer, mTrashContainer;
+    mCaptureBtnContainer, mCloseStillshotContainer, mPenContainer, mUndoContainer, mColorPickerContainer,
+    mSaveContainer, mStickerContainer, mTrashContainer;
     private DrawableImageView mStillshotImageView;
     private ImageButton mTrashIcon, mFlashIcon;
     private VerticalSlideColorPicker mVerticalSlideColorPicker;
 
 
-    public static Camera2Fragment newInstance(String idCam) {
-        Camera2Fragment fragment = new Camera2Fragment();
+
+    public static Camera1Fragment newInstance(String idCam){
+        Camera1Fragment fragment = new Camera1Fragment();
         fragment.mCameraId = idCam;
         return fragment;
     }
@@ -264,7 +219,7 @@ public class Camera2Fragment extends Fragment implements
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_camera2, container, false);
+        View view = inflater.inflate(R.layout.fragment_camera1, container, false);
 
 
         return view;
@@ -310,7 +265,6 @@ public class Camera2Fragment extends Fragment implements
 
         setMaxSizes();
         resetIconVisibilities();
-
         BroadcastReceiver captureImage = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -333,13 +287,14 @@ public class Camera2Fragment extends Fragment implements
     }
 
 
+
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.stillshot: {
-                if (!mIsImageAvailable) {
+                if(!mIsImageAvailable){
                     Log.d(TAG, "onClick: taking picture.");
-                    //takePicture();
+                   // takePicture();
                 }
                 break;
             }
@@ -350,33 +305,33 @@ public class Camera2Fragment extends Fragment implements
                 break;
             }
 
-            case R.id.close_stillshot_view: {
+            case R.id.close_stillshot_view:{
                 hideStillshotContainer();
                 break;
             }
 
-            case R.id.init_draw_icon: {
+            case R.id.init_draw_icon:{
                 toggleColorPickerVisibility();
                 break;
             }
 
-            case R.id.undo_container: {
+            case R.id.undo_container:{
                 undoAction();
                 break;
             }
 
-            case R.id.save_stillshot: {
+            case R.id.save_stillshot:{
                 saveCapturedStillshotToDisk();
                 break;
             }
 
-            case R.id.init_sticker_icon: {
+            case R.id.init_sticker_icon:{
                 toggleStickers();
                 break;
             }
 
             case R.id.flash_toggle: {
-                if (!mIsImageAvailable) {
+                if(!mIsImageAvailable){
                     toggleFlashState();
                 }
                 break;
@@ -384,27 +339,31 @@ public class Camera2Fragment extends Fragment implements
         }
     }
 
-    private void toggleFlashState() {
-        if (mFlashState == FLASH_STATE_OFF) {
+    private void toggleFlashState(){
+        if(mFlashState == FLASH_STATE_OFF){
             mFlashState = FLASH_STATE_ON;
-        } else if (mFlashState == FLASH_STATE_ON) {
+        }
+        else if(mFlashState == FLASH_STATE_ON){
             mFlashState = FLASH_STATE_AUTO;
-        } else if (mFlashState == FLASH_STATE_AUTO) {
+        }
+        else if(mFlashState == FLASH_STATE_AUTO){
             mFlashState = FLASH_STATE_OFF;
         }
         setFlashIcon();
     }
 
-    private void setFlashIcon() {
-        if (mFlashState == FLASH_STATE_OFF) {
+    private void setFlashIcon(){
+        if(mFlashState == FLASH_STATE_OFF){
             Glide.with(getActivity())
                     .load(R.drawable.ic_flash_off)
                     .into(mFlashIcon);
-        } else if (mFlashState == FLASH_STATE_ON) {
+        }
+        else if(mFlashState == FLASH_STATE_ON){
             Glide.with(getActivity())
                     .load(R.drawable.ic_flash_on)
                     .into(mFlashIcon);
-        } else if (mFlashState == FLASH_STATE_AUTO) {
+        }
+        else if(mFlashState == FLASH_STATE_AUTO){
             Glide.with(getActivity())
                     .load(R.drawable.ic_flash_auto)
                     .into(mFlashIcon);
@@ -415,36 +374,37 @@ public class Camera2Fragment extends Fragment implements
 
     private void setAutoFlash(CaptureRequest.Builder requestBuilder) {
         if (mFlashSupported) {
-            if (mFlashState == FLASH_STATE_OFF) {
+            if(mFlashState == FLASH_STATE_OFF){
                 requestBuilder.set(CaptureRequest.FLASH_MODE,
                         CaptureRequest.FLASH_MODE_OFF);
-            } else if (mFlashState == FLASH_STATE_ON) {
+            }
+            else if(mFlashState == FLASH_STATE_ON){
                 requestBuilder.set(CaptureRequest.FLASH_MODE,
                         CaptureRequest.FLASH_MODE_SINGLE);
-            } else if (mFlashState == FLASH_STATE_AUTO) {
+            }
+            else if(mFlashState == FLASH_STATE_AUTO){
                 requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
                         CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
             }
         }
     }
 
-    public void addSticker(Drawable sticker) {
+    public void addSticker(Drawable sticker){
         mStillshotImageView.addNewSticker(sticker);
     }
 
-    public void setTrashIconSize(int width, int height) {
+    public void setTrashIconSize(int width, int height){
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mTrashIcon.getLayoutParams();
 
         final float scale = getContext().getResources().getDisplayMetrics().density;
 
         params.height = (int) (width * scale + 0.5f);
-        params.width = (int) (height * scale + 0.5f);
-        ;
+        params.width = (int) (height * scale + 0.5f);;
         mTrashIcon.setLayoutParams(params);
     }
 
-    public void dragStickerStarted() {
-        if (mStillshotImageView.mSelectedStickerIndex != -1) {
+    public void dragStickerStarted(){
+        if(mStillshotImageView.mSelectedStickerIndex != -1){
             mColorPickerContainer.animate().alpha(0.0f).setDuration(ICON_FADE_DURATION);
             mUndoContainer.animate().alpha(0.0f).setDuration(ICON_FADE_DURATION);
             mPenContainer.animate().alpha(0.0f).setDuration(ICON_FADE_DURATION);
@@ -457,8 +417,8 @@ public class Camera2Fragment extends Fragment implements
         }
     }
 
-    public void dragStickerStopped() {
-        if (mStillshotImageView.mSelectedStickerIndex == -1) {
+    public void dragStickerStopped(){
+        if(mStillshotImageView.mSelectedStickerIndex == -1){
             mColorPickerContainer.animate().alpha(1.0f).setDuration(0);
             mUndoContainer.animate().alpha(1.0f).setDuration(0);
             mPenContainer.animate().alpha(1.0f).setDuration(0);
@@ -472,29 +432,30 @@ public class Camera2Fragment extends Fragment implements
         }
     }
 
-    private void toggleStickers() {
+    private void toggleStickers(){
         Log.d(TAG, "displayStickers: called.");
         mIMainActivity.toggleViewStickersFragment();
     }
 
-    private void saveCapturedStillshotToDisk() {
-        if (mIsImageAvailable) {
+    private void saveCapturedStillshotToDisk(){
+        if(mIsImageAvailable){
             Log.d(TAG, "saveCapturedStillshotToDisk: saving image to disk.");
 
             final ICallback callback = new ICallback() {
                 @Override
                 public void done(Exception e) {
-                    if (e == null) {
+                    if(e == null){
                         Log.d(TAG, "onImageSavedCallback: image saved!");
                         showSnackBar("Image saved", Snackbar.LENGTH_SHORT);
-                    } else {
+                    }
+                    else{
                         Log.d(TAG, "onImageSavedCallback: error saving image: " + e.getMessage());
                         showSnackBar("Error saving image", Snackbar.LENGTH_SHORT);
                     }
                 }
             };
 
-            if (mCapturedImage != null) {
+            if(mCapturedImage != null){
 
                 Log.d(TAG, "saveCapturedStillshotToDisk: saving to disk.");
 
@@ -516,21 +477,22 @@ public class Camera2Fragment extends Fragment implements
         mStillshotImageView.setBrushColor(selectedColor);
     }
 
-    private void toggleColorPickerVisibility() {
-        if (mColorPickerContainer.getVisibility() == View.VISIBLE) {
+    private void toggleColorPickerVisibility(){
+        if(mColorPickerContainer.getVisibility() == View.VISIBLE){
             mColorPickerContainer.setVisibility(View.INVISIBLE);
             mUndoContainer.setVisibility(View.INVISIBLE);
             mStickerContainer.setVisibility(View.VISIBLE);
             mTrashContainer.setVisibility(View.INVISIBLE);
 
             mIsDrawingEnabled = false;
-        } else if (mColorPickerContainer.getVisibility() == View.INVISIBLE) {
+        }
+        else if(mColorPickerContainer.getVisibility() == View.INVISIBLE){
             mColorPickerContainer.setVisibility(View.VISIBLE);
             mUndoContainer.setVisibility(View.VISIBLE);
             mStickerContainer.setVisibility(View.INVISIBLE);
             mTrashContainer.setVisibility(View.INVISIBLE);
 
-            if (mStillshotImageView.getBrushColor() == 0) {
+            if(mStillshotImageView.getBrushColor() == 0){
                 mStillshotImageView.setBrushColor(Color.WHITE);
             }
 
@@ -545,8 +507,8 @@ public class Camera2Fragment extends Fragment implements
         }
     }
 
-    public void drawingStarted() {
-        if (!mIsCurrentlyDrawing) {
+    public void drawingStarted(){
+        if(!mIsCurrentlyDrawing){
             mColorPickerContainer.animate().alpha(0.0f).setDuration(ICON_FADE_DURATION);
             mUndoContainer.animate().alpha(0.0f).setDuration(ICON_FADE_DURATION);
             mSaveContainer.animate().alpha(0.0f).setDuration(ICON_FADE_DURATION);
@@ -558,9 +520,9 @@ public class Camera2Fragment extends Fragment implements
         }
     }
 
-    public void drawingStopped() {
+    public void drawingStopped(){
 
-        if (mIsCurrentlyDrawing) {
+        if(mIsCurrentlyDrawing){
             mColorPickerContainer.animate().alpha(1.0f).setDuration(0);
             mUndoContainer.animate().alpha(1.0f).setDuration(0);
             mPenContainer.animate().alpha(1.0f).setDuration(0);
@@ -578,17 +540,17 @@ public class Camera2Fragment extends Fragment implements
 
         switch (motionEvent.getAction()) {
 
-            case MotionEvent.ACTION_DOWN: {
+            case MotionEvent.ACTION_DOWN:{
                 startX = motionEvent.getX();
                 startY = motionEvent.getY();
                 break;
             }
 
-            case MotionEvent.ACTION_UP: {
+            case MotionEvent.ACTION_UP:{
                 float endX = motionEvent.getX();
                 float endY = motionEvent.getY();
                 if (isAClick(startX, endX, startY, endY)) {
-                    if (view.getId() == R.id.texture && view.getId() != R.id.stillshot) {
+                    if(view.getId() == R.id.texture && view.getId() != R.id.stillshot){
                         Log.d(TAG, "onTouch: MANUAL FOCUS.");
                         startManualFocus(view, motionEvent);
                     }
@@ -596,19 +558,20 @@ public class Camera2Fragment extends Fragment implements
                 break;
             }
 
-            case MotionEvent.ACTION_MOVE: {
+            case MotionEvent.ACTION_MOVE:{
                 break;
             }
         }
 
-        if (mIsImageAvailable) {
+        if(mIsImageAvailable){
             Log.d(TAG, "onTouch: sending touch event to DrawableImageView");
             return mStillshotImageView.touchEvent(motionEvent);
-        } else {
+        }
+        else{
             Log.d(TAG, "onTouch: ZOOM.");
             return mTextureView.onTouch(motionEvent);
         }
-
+        
     }
 
     private boolean mManualFocusEngaged = false;
@@ -635,9 +598,9 @@ public class Camera2Fragment extends Fragment implements
         return characteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF) >= 1;
     }
 
-    private boolean startManualFocus(View view, MotionEvent motionEvent) {
+    private boolean startManualFocus(View view, MotionEvent motionEvent){
         Log.d(TAG, "startManualFocus: called");
-
+        
         if (mManualFocusEngaged) {
             Log.d(TAG, "startManualFocus: Manual focus already engaged");
             return true;
@@ -651,13 +614,13 @@ public class Camera2Fragment extends Fragment implements
             final Rect sensorArraySize = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
 
             //TODO: here I just flip x,y, but this needs to correspond with the sensor orientation (via SENSOR_ORIENTATION)
-            final int y = (int) ((motionEvent.getX() / (float) view.getWidth()) * (float) sensorArraySize.height());
-            final int x = (int) ((motionEvent.getY() / (float) view.getHeight()) * (float) sensorArraySize.width());
-            final int halfTouchWidth = 150; //(int)motionEvent.getTouchMajor(); //TODO: this doesn't represent actual touch size in pixel. Values range in [3, 10]...
+            final int y = (int)((motionEvent.getX() / (float)view.getWidth())  * (float)sensorArraySize.height());
+            final int x = (int)((motionEvent.getY() / (float)view.getHeight()) * (float)sensorArraySize.width());
+            final int halfTouchWidth  = 150; //(int)motionEvent.getTouchMajor(); //TODO: this doesn't represent actual touch size in pixel. Values range in [3, 10]...
             final int halfTouchHeight = 150; //(int)motionEvent.getTouchMinor();
-            MeteringRectangle focusAreaTouch = new MeteringRectangle(Math.max(x - halfTouchWidth, 0),
+            MeteringRectangle focusAreaTouch = new MeteringRectangle(Math.max(x - halfTouchWidth,  0),
                     Math.max(y - halfTouchHeight, 0),
-                    halfTouchWidth * 2,
+                    halfTouchWidth  * 2,
                     halfTouchHeight * 2,
                     MeteringRectangle.METERING_WEIGHT_MAX - 1);
 
@@ -720,9 +683,9 @@ public class Camera2Fragment extends Fragment implements
         return true;
     }
 
-    private void hideStillshotContainer() {
+    private void hideStillshotContainer(){
         mIMainActivity.showStatusBar();
-        if (mIsImageAvailable) {
+        if(mIsImageAvailable){
             mIsImageAvailable = false;
             mCapturedBitmap = null;
             mStillshotImageView.setImageBitmap(null);
@@ -746,6 +709,11 @@ public class Camera2Fragment extends Fragment implements
 //        mStillshotContainer.setVisibility(View.INVISIBLE);
 //        mPenContainer.setVisibility(View.VISIBLE);
 //        mStickerContainer.setVisibility(View.VISIBLE);
+//
+//        mFlashContainer.setVisibility(View.VISIBLE);
+//        mSwitchOrientationContainer.setVisibility(View.VISIBLE);
+//        mCaptureBtnContainer.setVisibility(View.VISIBLE);
+//        mTrashContainer.setVisibility(View.INVISIBLE);
 
         mColorPickerContainer.setVisibility(View.GONE);
         mUndoContainer.setVisibility(View.GONE);
@@ -757,13 +725,12 @@ public class Camera2Fragment extends Fragment implements
         mSwitchOrientationContainer.setVisibility(View.GONE);
         mCaptureBtnContainer.setVisibility(View.VISIBLE);
         mTrashContainer.setVisibility(View.GONE);
-
     }
 
     /**
      * Initiate a still image capture.
      */
-    private void takePicture() {
+    private void takePicture()  {
         lockFocus();
     }
 
@@ -879,7 +846,8 @@ public class Camera2Fragment extends Fragment implements
                         } else {
                             runPrecaptureSequence();
                         }
-                    } else if (afState == CaptureResult.CONTROL_AF_STATE_INACTIVE) {
+                    }
+                    else if(afState == CaptureResult.CONTROL_AF_STATE_INACTIVE){
                         mState = STATE_PICTURE_TAKEN;
                         captureStillPicture();
                     }
@@ -999,7 +967,7 @@ public class Camera2Fragment extends Fragment implements
         public void onImageAvailable(ImageReader reader) {
             Log.d(TAG, "onImageAvailable: called.");
 
-            if (!mIsImageAvailable) {
+            if(!mIsImageAvailable){
                 mCapturedImage = reader.acquireLatestImage();
 
                 Log.d(TAG, "onImageAvailable: captured image width: " + mCapturedImage.getWidth());
@@ -1008,7 +976,7 @@ public class Camera2Fragment extends Fragment implements
                 saveTempImageToStorage();
 
                 final Activity activity = getActivity();
-                if (activity != null) {
+                if(activity != null){
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -1025,7 +993,6 @@ public class Camera2Fragment extends Fragment implements
 
         }
     };
-
     /**
      * Retrieves the JPEG orientation from the specified screen rotation.
      *
@@ -1159,9 +1126,7 @@ public class Camera2Fragment extends Fragment implements
         }
     }
 
-    /**
-     * Closes the current {@link CameraDevice}.
-     */
+    /** Closes the current {@link CameraDevice}. */
     private void closeCamera() {
 
         try {
@@ -1185,11 +1150,9 @@ public class Camera2Fragment extends Fragment implements
         }
     }
 
-    /**
-     * Starts a background thread and its {@link Handler}.
-     */
+    /** Starts a background thread and its {@link Handler}. */
     private void startBackgroundThread() {
-        if (mBackgroundThread == null) {
+        if(mBackgroundThread == null){
             Log.d(TAG, "startBackgroundThread: called.");
             mBackgroundThread = new HandlerThread("CameraBackground");
             mBackgroundThread.start();
@@ -1197,11 +1160,9 @@ public class Camera2Fragment extends Fragment implements
         }
     }
 
-    /**
-     * Stops the background thread and its {@link Handler}.
-     */
+    /** Stops the background thread and its {@link Handler}. */
     private void stopBackgroundThread() {
-        if (mBackgroundThread != null) {
+        if(mBackgroundThread != null){
             mBackgroundThread.quitSafely();
             try {
                 mBackgroundThread.join();
@@ -1220,9 +1181,10 @@ public class Camera2Fragment extends Fragment implements
 
         startBackgroundThread();
 
-        if (mIsImageAvailable) {
+        if(mIsImageAvailable){
             mIMainActivity.hideStatusBar();
-        } else {
+        }
+        else{
             mIMainActivity.showStatusBar();
 
             // When the screen is turned off and turned back on, the SurfaceTexture is already
@@ -1237,7 +1199,7 @@ public class Camera2Fragment extends Fragment implements
     public void onPause() {
         closeCamera();
         stopBackgroundThread();
-        if (mBackgroundImageRotater != null) {
+        if(mBackgroundImageRotater != null){
             mBackgroundImageRotater.cancel(true);
         }
         super.onPause();
@@ -1271,23 +1233,23 @@ public class Camera2Fragment extends Fragment implements
             assert map != null;
 
             Size largest = null;
-            float screenAspectRatio = (float) SCREEN_WIDTH / (float) SCREEN_HEIGHT;
+            float screenAspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
             List<Size> sizes = new ArrayList<>();
-            for (Size size : Arrays.asList(map.getOutputSizes(ImageFormat.JPEG))) {
+            for( Size size : Arrays.asList(map.getOutputSizes(ImageFormat.JPEG))){
 
-                float temp = (float) size.getWidth() / (float) size.getHeight();
+                float temp = (float)size.getWidth() / (float)size.getHeight();
 
                 Log.d(TAG, "setUpCameraOutputs: temp: " + temp);
                 Log.d(TAG, "setUpCameraOutputs: w: " + size.getWidth() + ", h: " + size.getHeight());
 
-                if (temp > (screenAspectRatio - screenAspectRatio * ASPECT_RATIO_ERROR_RANGE)
-                        && temp < (screenAspectRatio + screenAspectRatio * ASPECT_RATIO_ERROR_RANGE)) {
+                if(temp > (screenAspectRatio - screenAspectRatio * ASPECT_RATIO_ERROR_RANGE )
+                        && temp < (screenAspectRatio + screenAspectRatio * ASPECT_RATIO_ERROR_RANGE)){
                     sizes.add(size);
                     Log.d(TAG, "setUpCameraOutputs: found a valid size: w: " + size.getWidth() + ", h: " + size.getHeight());
                 }
 
             }
-            if (sizes.size() > 0) {
+            if(sizes.size() > 0){
                 largest = Collections.max(
                         sizes,
                         new Utility.CompareSizesByArea());
@@ -1386,7 +1348,7 @@ public class Camera2Fragment extends Fragment implements
 
     }
 
-    private void setMaxSizes() {
+    private void setMaxSizes(){
         Point displaySize = new Point();
         getActivity().getWindowManager().getDefaultDisplay().getSize(displaySize);
         SCREEN_HEIGHT = displaySize.x;
@@ -1397,7 +1359,7 @@ public class Camera2Fragment extends Fragment implements
     }
 
 
-    private void findCameraIds() {
+    private void findCameraIds(){
 
         Activity activity = getActivity();
         CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
@@ -1408,40 +1370,42 @@ public class Camera2Fragment extends Fragment implements
                 if (cameraId == null) continue;
                 CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
                 int facing = characteristics.get(CameraCharacteristics.LENS_FACING);
-                if (facing == CameraCharacteristics.LENS_FACING_FRONT) {
+                if (facing == CameraCharacteristics.LENS_FACING_FRONT){
                     mIMainActivity.setFrontCameraId(cameraId);
-                } else if (facing == CameraCharacteristics.LENS_FACING_BACK) {
+                }
+                else if (facing == CameraCharacteristics.LENS_FACING_BACK){
                     mIMainActivity.setBackCameraId(cameraId);
                 }
             }
             mIMainActivity.setCameraFrontFacing();
-          //  mCameraId = mIMainActivity.getBackCameraId();
+          //  mCameraId = mIMainActivity.getFrontCameraId();
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
     }
 
 
-    private void toggleCameraDisplayOrientation() {
-        if (mCameraId.equals(mIMainActivity.getBackCameraId())) {
+    private void toggleCameraDisplayOrientation(){
+        if(mCameraId.equals(mIMainActivity.getBackCameraId())){
             mCameraId = mIMainActivity.getFrontCameraId();
             mIMainActivity.setCameraFrontFacing();
             closeCamera();
             reopenCamera();
             Log.d(TAG, "toggleCameraDisplayOrientation: switching to front-facing camera.");
-        } else if (mCameraId.equals(mIMainActivity.getFrontCameraId())) {
+        }
+        else if(mCameraId.equals(mIMainActivity.getFrontCameraId())){
             mCameraId = mIMainActivity.getBackCameraId();
             mIMainActivity.setCameraBackFacing();
             closeCamera();
             reopenCamera();
             Log.d(TAG, "toggleCameraDisplayOrientation: switching to back-facing camera.");
-        } else {
+        }
+        else{
             Log.d(TAG, "toggleCameraDisplayOrientation: error.");
         }
     }
-
     /**
-     * Configures the necessary {@link android.graphics.Matrix} transformation to `mTextureView`.
+     * Configures the necessary {@link Matrix} transformation to `mTextureView`.
      * This method should be called after the camera preview size is determined in
      * setUpCameraOutputs and also the size of `mTextureView` is fixed.
      *
@@ -1476,16 +1440,16 @@ public class Camera2Fragment extends Fragment implements
         }
 
 
-        float screenAspectRatio = (float) SCREEN_WIDTH / (float) SCREEN_HEIGHT;
-        float previewAspectRatio = (float) mPreviewSize.getWidth() / (float) mPreviewSize.getHeight();
+        float screenAspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
+        float previewAspectRatio = (float)mPreviewSize.getWidth() / (float)mPreviewSize.getHeight();
         String roundedScreenAspectRatio = String.format("%.2f", screenAspectRatio);
         String roundedPreviewAspectRatio = String.format("%.2f", previewAspectRatio);
-        if (!roundedPreviewAspectRatio.equals(roundedScreenAspectRatio)) {
+        if(!roundedPreviewAspectRatio.equals(roundedScreenAspectRatio) ){
 
             float scaleFactor = (screenAspectRatio / previewAspectRatio);
             Log.d(TAG, "configureTransform: scale factor: " + scaleFactor);
 
-            float heightCorrection = (((float) SCREEN_HEIGHT * scaleFactor) - (float) SCREEN_HEIGHT) / 2;
+            float heightCorrection = (((float)SCREEN_HEIGHT * scaleFactor) - (float)SCREEN_HEIGHT) / 2;
 
             matrix.postScale(scaleFactor, 1);
             matrix.postTranslate(-heightCorrection, 0);
@@ -1493,6 +1457,8 @@ public class Camera2Fragment extends Fragment implements
 
         mTextureView.setTransform(matrix);
     }
+
+
 
 
     private void requestCameraPermission() {
@@ -1503,13 +1469,13 @@ public class Camera2Fragment extends Fragment implements
         }
     }
 
-    private void saveTempImageToStorage() {
+    private void saveTempImageToStorage(){
 
         Log.d(TAG, "saveTempImageToStorage: saving temp image to disk.");
         final ICallback callback = new ICallback() {
             @Override
             public void done(Exception e) {
-                if (e == null) {
+                if(e == null){
                     Log.d(TAG, "onImageSavedCallback: image saved!");
 
                     mBackgroundImageRotater = new BackgroundImageRotater(getActivity());
@@ -1517,7 +1483,8 @@ public class Camera2Fragment extends Fragment implements
                     mIsImageAvailable = true;
                     mCapturedImage.close();
 
-                } else {
+                }
+                else{
                     Log.d(TAG, "onImageSavedCallback: error saving image: " + e.getMessage());
                     showSnackBar("Error displaying image", Snackbar.LENGTH_SHORT);
                 }
@@ -1537,10 +1504,10 @@ public class Camera2Fragment extends Fragment implements
         mBackgroundHandler.post(imageSaver);
     }
 
-    private void displayCapturedImage() {
+    private void displayCapturedImage(){
         Log.d(TAG, "displayCapturedImage: displaying stillshot image.");
         final Activity activity = getActivity();
-        if (activity != null) {
+        if(activity != null){
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -1557,8 +1524,8 @@ public class Camera2Fragment extends Fragment implements
                     Log.d(TAG, "run: captured image height: " + bitmapHeight);
 
 
-                    int focusX = (int) (mTextureView.mFocusX);
-                    int focusY = (int) (mTextureView.mFocusY);
+                    int focusX = (int)(mTextureView.mFocusX);
+                    int focusY = (int)(mTextureView.mFocusY);
                     Log.d(TAG, "run: focusX: " + focusX);
                     Log.d(TAG, "run: focusY: " + focusY);
 
@@ -1568,19 +1535,19 @@ public class Camera2Fragment extends Fragment implements
                     Log.d(TAG, "run: initial maxWidth: " + maxWidth);
                     Log.d(TAG, "run: initial maxHeight: " + maxHeight);
 
-                    float bitmapHeightScaleFactor = (float) bitmapHeight / (float) maxHeight;
-                    float bitmapWidthScaleFactor = (float) bitmapWidth / (float) maxWidth;
+                    float bitmapHeightScaleFactor = (float)bitmapHeight / (float)maxHeight;
+                    float bitmapWidthScaleFactor = (float)bitmapWidth / (float)maxWidth;
                     Log.d(TAG, "run: bitmap width scale factor: " + bitmapWidthScaleFactor);
                     Log.d(TAG, "run: bitmap height scale factor: " + bitmapHeightScaleFactor);
 
-                    int actualWidth = (int) (maxWidth * (1 / mTextureView.mScaleFactorX));
-                    int actualHeight = (int) (maxHeight * (1 / mTextureView.mScaleFactorY));
+                    int actualWidth = (int)(maxWidth * (1 / mTextureView.mScaleFactorX));
+                    int actualHeight = (int)(maxHeight * (1 / mTextureView.mScaleFactorY));
                     Log.d(TAG, "run: actual width: " + actualWidth);
                     Log.d(TAG, "run: actual height: " + actualHeight);
 
 
-                    int scaledWidth = (int) (actualWidth * bitmapWidthScaleFactor);
-                    int scaledHeight = (int) (actualHeight * bitmapHeightScaleFactor);
+                    int scaledWidth = (int)(actualWidth * bitmapWidthScaleFactor);
+                    int scaledHeight = (int)(actualHeight * bitmapHeightScaleFactor);
                     Log.d(TAG, "run: scaled width: " + scaledWidth);
                     Log.d(TAG, "run: scaled height: " + scaledHeight);
 
@@ -1607,7 +1574,7 @@ public class Camera2Fragment extends Fragment implements
         }
     }
 
-    private void showStillshotContainer() {
+    private void showStillshotContainer(){
         mStillshotContainer.setVisibility(View.VISIBLE);
         mFlashContainer.setVisibility(View.INVISIBLE);
         mSwitchOrientationContainer.setVisibility(View.INVISIBLE);
@@ -1618,12 +1585,13 @@ public class Camera2Fragment extends Fragment implements
     }
 
 
+
     /**
-     * WARNING!
-     * Can cause memory leaks! To prevent this the object is a global and CANCEL is being called
-     * in "OnPause".
+     *  WARNING!
+     *  Can cause memory leaks! To prevent this the object is a global and CANCEL is being called
+     *  in "OnPause".
      */
-    private class BackgroundImageRotater extends AsyncTask<Void, Integer, Integer> {
+    private class BackgroundImageRotater extends AsyncTask<Void, Integer, Integer>{
 
         Activity mActivity;
 
@@ -1653,10 +1621,11 @@ public class Camera2Fragment extends Fragment implements
         @Override
         protected void onPostExecute(Integer integer) {
             super.onPostExecute(integer);
-            if (integer == 1) {
+            if(integer == 1){
                 displayCapturedImage();
-            } else {
-                showSnackBar("Save image", Snackbar.LENGTH_SHORT);
+            }
+            else{
+                showSnackBar("", Snackbar.LENGTH_SHORT);
             }
         }
     }
@@ -1721,14 +1690,10 @@ public class Camera2Fragment extends Fragment implements
      */
     private static class ImageSaver implements Runnable {
 
-        /**
-         * The file we save the image into.
-         */
+        /** The file we save the image into. */
         private final File mFile;
 
-        /**
-         * Original image that was captured
-         */
+        /** Original image that was captured */
         private Image mImage;
 
         private ICallback mCallback;
@@ -1750,14 +1715,14 @@ public class Camera2Fragment extends Fragment implements
         @Override
         public void run() {
 
-            if (mImage != null) {
+            if(mImage != null){
                 ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
                 FileOutputStream output = null;
                 try {
-                    String fname = "CaptureImage2" + System.currentTimeMillis() + ".jpg";
-                    File file = new File(mFile, fname);
+                    String name = "CaptureImage1" + System.currentTimeMillis() + ".jpg";
+                    File file = new File(mFile, name);
                     output = new FileOutputStream(file);
                     output.write(bytes);
                 } catch (IOException e) {
@@ -1773,6 +1738,36 @@ public class Camera2Fragment extends Fragment implements
                         }
                     }
                     mCallback.done(null);
+                }
+            }
+            else if(mBitmap != null){
+                ByteArrayOutputStream stream = null;
+                byte[] imageByteArray = null;
+                stream = new ByteArrayOutputStream();
+                mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                imageByteArray = stream.toByteArray();
+
+                SimpleDateFormat s = new SimpleDateFormat("ddMMyyyyhhmmss");
+                String format = s.format(new Date());
+                File file = new File(mFile, "image_" + format + ".jpg");
+
+                // save the mirrored byte array
+                FileOutputStream output = null;
+                try {
+                    output = new FileOutputStream(file);
+                    output.write(imageByteArray);
+                } catch (IOException e) {
+                    mCallback.done(e);
+                    e.printStackTrace();
+                } finally {
+                    if (null != output) {
+                        try {
+                            output.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        mCallback.done(null);
+                    }
                 }
             }
         }
@@ -1800,10 +1795,10 @@ public class Camera2Fragment extends Fragment implements
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        try {
+        try{
             mIMainActivity = (IMainActivity) getActivity();
-        } catch (ClassCastException e) {
-            Log.e(TAG, "onAttach: ClassCastException: " + e.getMessage());
+        }catch (ClassCastException e){
+            Log.e(TAG, "onAttach: ClassCastException: " + e.getMessage() );
         }
     }
 

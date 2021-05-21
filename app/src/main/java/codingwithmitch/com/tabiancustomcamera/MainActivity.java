@@ -3,6 +3,7 @@ package codingwithmitch.com.tabiancustomcamera;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -11,13 +12,15 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements IMainActivity{
+public class MainActivity extends AppCompatActivity implements IMainActivity {
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_CODE = 1234;
@@ -26,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity{
     public static String MAX_ASPECT_RATIO;
 
     //widgets
-
+    private Button btn_capture;
     //vars
     private boolean mPermissions;
     public String mCameraOrientation = "none"; // Front-facing or back-facing
@@ -36,35 +39,46 @@ public class MainActivity extends AppCompatActivity implements IMainActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        btn_capture = findViewById(R.id.btn_capture);
         init();
+        btn_capture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent("capture_image");
+                LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(intent);
+            }
+        });
     }
 
-    private void startCamera2(){
+    private void startCamera2() {
+        FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
+        transaction1.replace(R.id.camera_container1, Camera1Fragment.newInstance("0"), getString(R.string.fragment_camera2));
+        transaction1.commit();
+
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.camera_container, Camera2Fragment.newInstance(), getString(R.string.fragment_camera2));
+        transaction.replace(R.id.camera_container, Camera2Fragment.newInstance("1"), getString(R.string.fragment_camera2));
         transaction.commit();
     }
 
-    private void init(){
-        if(mPermissions){
-            if(checkCameraHardware(this)){
+    private void init() {
+        if (mPermissions) {
+            if (checkCameraHardware(this)) {
 
                 // Open the Camera
                 startCamera2();
-            }
-            else{
+            } else {
                 showSnackBar("You need a camera to use this application", Snackbar.LENGTH_INDEFINITE);
             }
-        }
-        else{
+        } else {
             verifyPermissions();
         }
     }
 
-    /** Check if this device has a camera */
+    /**
+     * Check if this device has a camera
+     */
     private boolean checkCameraHardware(Context context) {
-        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             // this device has a camera
             return true;
         } else {
@@ -73,15 +87,15 @@ public class MainActivity extends AppCompatActivity implements IMainActivity{
         }
     }
 
-    public void verifyPermissions(){
+    public void verifyPermissions() {
         Log.d(TAG, "verifyPermissions: asking user for permissions.");
         String[] permissions = {
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA};
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                permissions[0] ) == PackageManager.PERMISSION_GRANTED
+                permissions[0]) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                permissions[1] ) == PackageManager.PERMISSION_GRANTED) {
+                permissions[1]) == PackageManager.PERMISSION_GRANTED) {
             mPermissions = true;
             init();
         } else {
@@ -97,11 +111,10 @@ public class MainActivity extends AppCompatActivity implements IMainActivity{
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if(requestCode == REQUEST_CODE){
-            if(mPermissions){
+        if (requestCode == REQUEST_CODE) {
+            if (mPermissions) {
                 init();
-            }
-            else{
+            } else {
                 verifyPermissions();
             }
         }
@@ -126,19 +139,19 @@ public class MainActivity extends AppCompatActivity implements IMainActivity{
     }
 
     @Override
-    public void setFrontCameraId(String cameraId){
+    public void setFrontCameraId(String cameraId) {
         CAMERA_POSITION_FRONT = cameraId;
     }
 
 
     @Override
-    public void setBackCameraId(String cameraId){
+    public void setBackCameraId(String cameraId) {
         CAMERA_POSITION_BACK = cameraId;
     }
 
     @Override
     public boolean isCameraFrontFacing() {
-        if(mCameraOrientation.equals(CAMERA_POSITION_FRONT)){
+        if (mCameraOrientation.equals(CAMERA_POSITION_FRONT)) {
             return true;
         }
         return false;
@@ -146,19 +159,19 @@ public class MainActivity extends AppCompatActivity implements IMainActivity{
 
     @Override
     public boolean isCameraBackFacing() {
-        if(mCameraOrientation.equals(CAMERA_POSITION_BACK)){
+        if (mCameraOrientation.equals(CAMERA_POSITION_BACK)) {
             return true;
         }
         return false;
     }
 
     @Override
-    public String getBackCameraId(){
+    public String getBackCameraId() {
         return CAMERA_POSITION_BACK;
     }
 
     @Override
-    public String getFrontCameraId(){
+    public String getFrontCameraId() {
         return CAMERA_POSITION_FRONT;
     }
 
@@ -184,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity{
     public void hideStillshotWidgets() {
         Camera2Fragment camera2Fragment = (Camera2Fragment) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_camera2));
         if (camera2Fragment != null) {
-            if(camera2Fragment.isVisible()){
+            if (camera2Fragment.isVisible()) {
                 camera2Fragment.drawingStarted();
             }
         }
@@ -194,31 +207,29 @@ public class MainActivity extends AppCompatActivity implements IMainActivity{
     public void showStillshotWidgets() {
         Camera2Fragment camera2Fragment = (Camera2Fragment) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_camera2));
         if (camera2Fragment != null) {
-            if(camera2Fragment.isVisible()){
+            if (camera2Fragment.isVisible()) {
                 camera2Fragment.drawingStopped();
             }
         }
     }
 
     @Override
-    public void toggleViewStickersFragment(){
+    public void toggleViewStickersFragment() {
 
         ViewStickersFragment viewStickersFragment
                 = (ViewStickersFragment) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_view_stickers));
         if (viewStickersFragment != null) {
-            if(viewStickersFragment.isVisible()){
+            if (viewStickersFragment.isVisible()) {
                 hideViewStickersFragment(viewStickersFragment);
-            }
-            else{
+            } else {
                 showViewStickersFragment(viewStickersFragment);
             }
-        }
-        else{
+        } else {
             inflateViewStickersFragment();
         }
     }
 
-    private void hideViewStickersFragment(ViewStickersFragment fragment){
+    private void hideViewStickersFragment(ViewStickersFragment fragment) {
 
         showStillshotWidgets();
 
@@ -228,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity{
         transaction.commit();
     }
 
-    private void showViewStickersFragment(ViewStickersFragment fragment){
+    private void showViewStickersFragment(ViewStickersFragment fragment) {
 
         hideStillshotWidgets();
 
@@ -238,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity{
         transaction.commit();
     }
 
-    private void inflateViewStickersFragment(){
+    private void inflateViewStickersFragment() {
 
         hideStillshotWidgets();
 
@@ -249,38 +260,38 @@ public class MainActivity extends AppCompatActivity implements IMainActivity{
     }
 
     @Override
-    public void addSticker(Drawable sticker){
+    public void addSticker(Drawable sticker) {
         Camera2Fragment camera2Fragment = (Camera2Fragment) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_camera2));
         if (camera2Fragment != null) {
-            if(camera2Fragment.isVisible()){
+            if (camera2Fragment.isVisible()) {
                 camera2Fragment.addSticker(sticker);
             }
         }
     }
 
     @Override
-    public void setTrashIconSize(int width, int height){
+    public void setTrashIconSize(int width, int height) {
         Camera2Fragment camera2Fragment = (Camera2Fragment) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_camera2));
         if (camera2Fragment != null) {
-            if(camera2Fragment.isVisible()){
+            if (camera2Fragment.isVisible()) {
                 camera2Fragment.setTrashIconSize(width, height);
             }
         }
     }
 
-    public void dragStickerStarted(){
+    public void dragStickerStarted() {
         Camera2Fragment camera2Fragment = (Camera2Fragment) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_camera2));
         if (camera2Fragment != null) {
-            if(camera2Fragment.isVisible()){
+            if (camera2Fragment.isVisible()) {
                 camera2Fragment.dragStickerStarted();
             }
         }
     }
 
-    public void dragStickerStopped(){
+    public void dragStickerStopped() {
         Camera2Fragment camera2Fragment = (Camera2Fragment) getSupportFragmentManager().findFragmentByTag(getString(R.string.fragment_camera2));
         if (camera2Fragment != null) {
-            if(camera2Fragment.isVisible()){
+            if (camera2Fragment.isVisible()) {
                 camera2Fragment.dragStickerStopped();
             }
         }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TabianCustomCamera</string>
+    <string name="app_name">CustomCamera</string>
 
     <string name="picture">Picture</string>
     <string name="description_info">Info</string>
